@@ -1,0 +1,28 @@
+name: semg-model_hiu_v0_2_0
+channels:
+  - defaults
+dependencies:
+  - dataclasses
+  - jedi=0.18.1
+  - numba=0.56.4
+  - mypy=0.910
+  - numpy=1.23.3
+  - python=3.8.13
+  - ipython
+  - ipywidgets
+  - pip=22.2.2
+  - scipy=1.9.1
+  - tensorflow=2.8
+  - seaborn=0.12
+  - vtk=9.0.3
+  - tqdm
+  - matplotlib
+  - pandas=1.5.3
+  - pip:
+    - pyyaml==6.0
+    - ray==1.12.0
+    - redis
+    - traits==6.4.1
+    - traits-stubs==6.4.0
+    - git+https://github.com/craig-warren/PyEVTK.git@aff5f1190822794d68394e07aedc66bc27b0af1f
+    - ./

@@ -1,0 +1,8 @@
+.ipynb_checkpoints
+__pycache__
+hom_iso_unbound.egg-info
+!**/*.py
+!*.py
+!*.ipynb
+introduction_output
+build
