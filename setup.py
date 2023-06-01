@@ -19,7 +19,7 @@ from setuptools import setup
 
 
 setup( name="hom_iso_unbound"
-        , version="0.2.0"
+        , version="0.2.1"
         , author="Malte Mechtenberg"
         , license="Apache License, Version 2.0"
         , packages=["emg_hom_iso_unbound"]

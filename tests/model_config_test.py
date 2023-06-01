@@ -15,7 +15,7 @@
 
 import unittest
 import pickle
-import core_hom.model_config as mc
+import emg_hom_iso_unbound.model_config as mc
 
 import numpy as np
 

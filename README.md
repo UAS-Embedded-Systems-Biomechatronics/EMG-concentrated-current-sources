@@ -22,7 +22,7 @@ To install the environement you need to have anaconda installed. If anaconda is 
 system `PATH` execute:
 ```bash
 conda env create -f ./environment.yml
-conda activate semg-model_hiu_v0_2_0
+conda activate semg-model_hiu_v0_2_1
 ```
 
 If you are using jupyter you can install a jupyter kernel for this environement
