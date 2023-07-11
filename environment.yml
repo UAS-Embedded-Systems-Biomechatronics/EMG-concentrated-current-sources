@@ -1,4 +1,4 @@
-name: semg-model_hiu_v0_2_1
+name: semg-model_hiu_v0_x_x_devel
 channels:
   - defaults
 dependencies:
@@ -25,4 +25,4 @@ dependencies:
     - traits==6.4.1
     - traits-stubs==6.4.0
     - git+https://github.com/craig-warren/PyEVTK.git@aff5f1190822794d68394e07aedc66bc27b0af1f
-    - ./
+    - -e ./
