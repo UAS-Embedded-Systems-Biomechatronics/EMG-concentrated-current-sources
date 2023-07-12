@@ -56,13 +56,8 @@ class simJobsByModelConfig(object):
 
         """
 
-        if force_project_overwrite and os.path.isdir(project_dir):
-            shutil.rmtree(project_dir)
-
-        if create_project_dir:
-            os.mkdir(project_dir)
-
         self.project_dir = project_dir
+        self.prepare_project_dir(force_project_overwrite, create_project_dir)
 
         if isinstance(config, str):
             self.config = loadRootConfigFile(config)
@@ -73,6 +68,16 @@ class simJobsByModelConfig(object):
         self._calc_max_iter()
 
         self._lastModel = None
+
+    def prepare_project_dir(
+            self, force_project_overwrite : bool, create_project_dir : bool):
+        if force_project_overwrite and os.path.isdir(self.project_dir):
+            shutil.rmtree(self.project_dir)
+
+        if create_project_dir:
+            os.mkdir(self.project_dir)
+
+
 
     def save_config2projectDir(self):
         project_dir_list = self.project_dir.split("/")
