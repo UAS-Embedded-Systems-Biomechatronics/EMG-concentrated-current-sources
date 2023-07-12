@@ -16,10 +16,6 @@
 from . import model_config as mc
 from . import model as model
 
-import traits
-import traits.api
-import traits.has_traits
-
 import os
 
 import shutil
