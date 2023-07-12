@@ -13,6 +13,9 @@
 # limitations under the License.
 # ==============================================================================
 
+
+from singleton_decorator import singleton
+
 from . import model_config as mc
 from . import model as model
 
@@ -21,6 +24,10 @@ import os
 import shutil
 
 from tqdm.auto import tqdm
+
+import numpy as np
+
+from typing import List, Dict, TypedDict
 
        
 
@@ -110,7 +117,11 @@ class simJobsByModelConfig(object):
                 , vtk_export  = self.config.export_vtk
                 , npz_export  = self.config.export_pyz
 
-                , tf_model_in = self._lastModel)
+                , tf_model_in = self._lastModel
+
+                , idx_motor_unit    = idx_motor_unit
+                , idx_muscle_fiber  = idx_muscle_fiber)
+
 
         self._lastModel = simTask.tf_model
 
@@ -127,7 +138,8 @@ class simJobsByModelConfig(object):
 
     def __iter__(self) -> 'model.simTask':
         for idx_motor_unit in range(len(self.config.muscle.motor_units)):
-            for idx_muscle_fiber in range(len(self.config.muscle.motor_units[idx_motor_unit].fibers)):
+            n_mf = len( self.config.muscle.motor_units[idx_motor_unit].fibers)
+            for idx_muscle_fiber in range(n_mf):
                 yield lambda : self.createSimTask(idx_motor_unit, idx_muscle_fiber)
 
     def execute_all(self, showProgressbar=True, export_config=True):
@@ -143,12 +155,65 @@ class simJobsByModelConfig(object):
             task_obj = task()
             task_obj.compute_task()
             task_obj.export_results()
+            if self.config.calc_sum_potential:
+                mus = motor_unit_store(self.config.muscle)
+                mus.add_mu_result(task_obj)
 
 
-def execute_sim_jobs(jobs : 'simJobsByModelConfig') -> None:
-    jobs.save_config2projectDir()
 
-    for job in tqdm(jobs, total=jobs._max_iter_count_allJobs):
-        job_obj = job()
-        job_obj.compute_task()
-        job_obj.export_results()
+class motor_unit_store_dict(TypedDict):
+    n_mf : int
+    n_mf_processed : int
+    sum_pot : 'np.ndarray'
+
+    exported : bool
+
+
+@singleton
+class motor_unit_store:
+    """
+    this class keeps track of the muscle fibers
+    that are part of motor unit and their simulation result.
+    It automatically calculates the electrode sum potential
+    for each motor unit. When all Mus are simulated it stores the 
+    sum potential.
+
+    TODO
+    ----
+        - add capability to read sum_pot from disc optionally
+          such that the RAM does not have to hold all motor unit 
+          simulation results
+
+        - Test what happens when multiple muscles are simualted
+    """
+    def __init__(self, muscle_config) -> None:
+        self.muscle_config = muscle_config
+        self.mu_s : Dict[int, motor_unit_store_dict] = {}
+        pass
+
+    def add_mu_result(self, task_obj : model.simTask) -> None :
+        motor_unit_id :int = task_obj.idx_motor_unit
+        e_pot : 'np.ndarray' = task_obj.res
+
+        if motor_unit_id not in self.mu_s:
+            self.mu_s[motor_unit_id] = {
+                  'n_mf'           : len(
+                    self.muscle_config.motor_units[motor_unit_id].fibers)
+                , 'n_mf_processed' : 1
+                , 'sum_pot'  : e_pot
+                , 'exported' : False
+            }
+            return
+
+        assert self.mu_s[motor_unit_id]['exported'] == False , \
+            "motor unit result is already exported"
+
+        self.mu_s[motor_unit_id]['sum_pot'] += e_pot
+        self.mu_s[motor_unit_id]['n_mf_processed'] += 1
+
+        if self.mu_s[motor_unit_id]['n_mf_processed'] >= self.mu_s[motor_unit_id]['n_mf']:
+            file_name = "e_sum_pot_idx_motor_unit_{}.npz".format(motor_unit_id)
+            file_path = os.path.join(task_obj.export_dir, file_name)
+
+            np.savez(file_path, e_sumPot = self.mu_s[motor_unit_id]['sum_pot'])
+            self.mu_s[motor_unit_id]['exported'] = True

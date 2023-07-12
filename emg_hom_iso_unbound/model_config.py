@@ -502,6 +502,8 @@ class root(base_config):
 
     time = traits.api.Array(dtype=np.float64, shape = (None), casting='safe')
 
+    calc_sum_potential = traits.api.Bool(False)
+
     electrodes = traits.api.Instance(electrodes)
     muscle     = traits.api.Instance(muscle)
 

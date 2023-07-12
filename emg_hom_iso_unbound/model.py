@@ -481,7 +481,13 @@ class simTask:
 
                  , description: str = "basic_simTask"
                  , export_dir='.'
-                 , tf_model_in = None):
+                 , tf_model_in = None
+                 , idx_motor_unit   :int = 0
+                 , idx_muscle_fiber :int = 0
+                 ):
+
+        self.idx_motor_unit = idx_motor_unit
+        self.idx_muscle_fiber = idx_muscle_fiber
 
         self.mf_config  = mf_config
         self.electrodes = electrodes
