@@ -55,12 +55,8 @@ class simJobsByModelConfig(object):
         self.project_dir = project_dir
         self.prepare_project_dir(force_project_overwrite, create_project_dir)
 
-        if isinstance(config, str):
-            self.config = loadRootConfigFile(config)
-        elif isinstance(config, mc.root):
-            self.config = config
-        else:
-            raise TypeError("argument config has to be a string config file path or model_config.root")
+        self.config = self.load_config(config)
+
         self._calc_max_iter()
 
         self._lastModel = None
@@ -73,6 +69,15 @@ class simJobsByModelConfig(object):
         if create_project_dir:
             os.mkdir(self.project_dir)
 
+
+    def load_config(self, config):
+        if isinstance(config, str):
+            return loadRootConfigFile(config)
+        elif isinstance(config, mc.root):
+            return config
+
+        raise TypeError("argument config has to be a string" \
+            " config file path or model_config.root")
 
 
     def save_config2projectDir(self):
