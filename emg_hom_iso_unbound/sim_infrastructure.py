@@ -35,7 +35,8 @@ class simJobsByModelConfig(object):
     """
     """
 
-    def __init__(self, config, project_dir = "./", create_project_dir = False, force_project_overwrite = False):
+    def __init__(self, config, project_dir = "./",
+                 create_project_dir = False, force_project_overwrite = False):
         """
         Creates an sEMG sim job object.
 
