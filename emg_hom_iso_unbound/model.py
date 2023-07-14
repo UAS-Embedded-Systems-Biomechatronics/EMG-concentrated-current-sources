@@ -614,6 +614,9 @@ class simTask:
 
 
     def export_results(self, nProc = 12):
+        if not (self.tf_profile or self._flag_vtk_export or self._flag_npz_export):
+            return
+
         if not os.path.exists(os.path.join(* self.base_export_dir_list)):
             os.makedirs(os.path.join(* self.base_export_dir_list))
 
