@@ -191,18 +191,27 @@ class motor_unit_store:
         self.mu_s : Dict[int, motor_unit_store_dict] = {}
         pass
 
+    def create_mu(self, motor_unit_id, e_pot, exported = False) -> None:
+        n_mf = len( self.muscle_config.motor_units[motor_unit_id].fibers)
+
+        n_mf_processed :int = 1
+        if exported:
+            n_mf_processed = n_mf
+
+        self.mu_s[motor_unit_id] = {
+              'n_mf'           : n_mf
+            , 'n_mf_processed' : n_mf_processed
+            , 'sum_pot'  : e_pot
+            , 'exported' : False
+        }
+
+
     def add_mu_result(self, task_obj : model.simTask) -> None :
         motor_unit_id :int = task_obj.idx_motor_unit
         e_pot : 'np.ndarray' = task_obj.res
 
         if motor_unit_id not in self.mu_s:
-            self.mu_s[motor_unit_id] = {
-                  'n_mf'           : len(
-                    self.muscle_config.motor_units[motor_unit_id].fibers)
-                , 'n_mf_processed' : 1
-                , 'sum_pot'  : e_pot
-                , 'exported' : False
-            }
+            self.create_mu(motor_unit_id, e_pot)
             return
 
         assert self.mu_s[motor_unit_id]['exported'] == False , \
