@@ -18,6 +18,7 @@ dependencies:
   - tqdm
   - matplotlib
   - pandas=1.5.3
+  - pytest
   - pip:
     - pyyaml==6.0
     - ray==1.12.0
