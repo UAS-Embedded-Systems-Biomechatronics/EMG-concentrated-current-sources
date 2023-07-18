@@ -439,6 +439,9 @@ class motorUnit(base_config):
     Ri = traits.api.Union(traits.api.Float(0.5), None)
     v  = traits.api.Union(traits.api.Float(5),   None) # m/s
 
+    firing_pattern : 'traits.api.List' = traits.api.List(
+        trait=traits.api.Float, value=[0.0], minlen=0)
+
 class muscle(base_config):
     """
     Muscle configuration.
