@@ -21,6 +21,8 @@ from . import model as model
 
 import os
 
+import re
+
 import shutil
 
 from tqdm.auto import tqdm
@@ -190,6 +192,20 @@ class motor_unit_store:
         self.muscle_config = muscle_config
         self.mu_s : Dict[int, motor_unit_store_dict] = {}
         pass
+
+    def load_from_files(self, str_project_dir) -> None:
+
+        for strFileName in os.listdir(str_project_dir):
+            m = re.fullmatch(r"e_sum_pot_idx_motor_unit_(\d+).npz", strFileName)
+            if m is None:
+                continue
+
+            file_path = os.path.join(str_project_dir, strFileName)
+
+            self.create_mu( motor_unit_id=int(m.groups()[0])
+                , e_pot= np.load(file_path)['e_sumPot']
+                , exported= True)
+
 
     def create_mu(self, motor_unit_id, e_pot, exported = False) -> None:
         n_mf = len( self.muscle_config.motor_units[motor_unit_id].fibers)
