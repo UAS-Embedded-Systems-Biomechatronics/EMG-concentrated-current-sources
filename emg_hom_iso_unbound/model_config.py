@@ -212,7 +212,7 @@ class muscleFiberRotation(base_config):
 
 
 def MF_Merletti1999(W_I, R, L_L, W_TL, L_R, W_TR):
-    """                                                         x x x x x    <- electrodes
+    r"""                                                         x x x x x    <- electrodes
                                                    --------------------------------------------------------------------
     musclefiber zone in z,y plane                                    .                             ^ h
            XXXXXXX   --------                          W_TL          |            W_TR             |
