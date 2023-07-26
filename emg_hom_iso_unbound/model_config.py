@@ -376,6 +376,27 @@ class muscleFiber(base_config):
             self.remove_trait('currentSource')
             self.add_trait('currentSource' , traits.api.PrototypedFrom('motor_unit'))
 
+class firingFreq_config(base_config):
+    pass
+
+class firingFreq_Petersen2019(firingFreq_config):
+    C1 = traits.api.Float(0)
+    C2 = traits.api.Float(0)
+    C3 = traits.api.Float(0)
+    C4 = traits.api.Float(0)
+    C5 = traits.api.Float(0)
+    C6 = traits.api.Float(0)
+    C7 = traits.api.Float(1)
+
+
+class firingBehavior(base_config):
+    firing_frequenzy   = traits.api.Instance(firingFreq_config, firingFreq_Petersen2019)
+    start_common_drive = traits.api.Float(0)
+
+    def __init__(self) -> None:
+        super().__init__()
+
+
 
 class motorUnit(base_config):
     """
@@ -438,6 +459,8 @@ class motorUnit(base_config):
     Re = traits.api.Union(traits.api.Float(0.5), None)
     Ri = traits.api.Union(traits.api.Float(0.5), None)
     v  = traits.api.Union(traits.api.Float(5),   None) # m/s
+
+    firing_behavior : firingBehavior = traits.api.Instance(firingBehavior)
 
     firing_pattern : 'traits.api.List' = traits.api.List(
         trait=traits.api.Float, value=[0.0], minlen=0)
