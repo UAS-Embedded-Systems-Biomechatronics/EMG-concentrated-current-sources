@@ -8,6 +8,10 @@ class FiringTrain_generator():
     def get_firing_rate(self, common_drive):
         raise NotImplemented("get_firing_rate is not implemented")
 
+    def generate_firing_instances(self):
+        raise NotImplemented("generate_firing_instances is not implemented")
+
+
     def __init__(self, motor_unit_config : model_config.motorUnit) -> None:
         self.mu_config = motor_unit_config
 
@@ -33,6 +37,14 @@ class FiringTrain_generator():
                 , C6 = self.firingFreq_Petersen.C6
                 , C7 = self.firingFreq_Petersen.C7
             )
+
+def generate_firing_instances_Petersen2019():
+"""
+    a = - ( )
+    c(CD) = 10 + 20 * np.exp(a)
+"""
+
+    pass
 
 @njit
 def get_firing_rate_Petersen2019(common_drive : float
