@@ -101,7 +101,6 @@ class test_MUAP_trains(unittest.TestCase):
 
 
 
-
 if __name__ == "__main__":
     unittest.main()
 
