@@ -13,4 +13,5 @@
 # limitations under the License.
 # ==============================================================================
 
-__all__ = ["sim_infrastructure", "tools", "model_config"]
+from . import lib
+__all__ = ["sim_infrastructure", "tools", "model_config", "lib"]

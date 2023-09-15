@@ -15,6 +15,7 @@
 
 
 from setuptools import setup
+from setuptools_rust import Binding, RustExtension
 
 
 
@@ -27,6 +28,7 @@ setup( name="hom_iso_unbound"
 	, install_requires = [
 		"tensorflow==2.8.*"
 		, "numpy==1.23.3"
+        , "maturin"
 		, "vtk==9.0.3"
 		, "evtk"
 		, "ray==1.12.0"
@@ -38,4 +40,6 @@ setup( name="hom_iso_unbound"
 		, "traits==6.4.1"
 		, "traits-stubs==6.4.0"
 		, "typing"
-	])
+	]
+    , rust_extensions = [ RustExtension('emg_hom_iso_unbound.lib', 'Cargo.toml', binding=Binding.PyO3) ]
+)
