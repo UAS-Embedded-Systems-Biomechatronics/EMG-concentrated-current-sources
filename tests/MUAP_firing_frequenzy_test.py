@@ -109,6 +109,42 @@ class test_MUAP_firing_frequenzy(unittest.TestCase):
 
         plt.show()
 
+    def test_batch_gen_firing_instances_Petersen2019(self):
+        mu_c = model_config.motorUnit()
+        def fn_common_drive(t):
+            if t<1:
+                return 0.01
+            elif 1 <= t <= 2:
+                return 0.8
+            else:
+                return 0.01
+
+        mu_c.firing_behavior = model_config.firingBehavior()
+        mu_c.firing_behavior.firing_frequenzy.C1 = 20.0
+        mu_c.firing_behavior.firing_frequenzy.C2 =  1.5 
+        mu_c.firing_behavior.firing_frequenzy.C3 = 30
+        mu_c.firing_behavior.firing_frequenzy.C4 = 13
+        mu_c.firing_behavior.firing_frequenzy.C5 =  8
+        mu_c.firing_behavior.firing_frequenzy.C6 =  8
+        mu_c.firing_behavior.firing_frequenzy.C7 =  0.05
+        
+        mu_c.firing_behavior.start_common_drive = 0
+
+        mu_c_list = [mu_c for _ in range(20)]
+
+        firing_vec_list = lib.batch_generate_firing_instances_peterson_2019(
+            mu_c_list, (0,3), "PyFn", fn_common_drive)
+
+        for firing_vec in firing_vec_list:
+            #for v, s in zip([firing_vec_py, firing_vec], ['-*r', '-^b']):
+            for v, s in zip([firing_vec], ['-^b']):
+                #a = np.ones_like(firing_vec)
+                a = np.linspace(0, 1, len(v))
+                plt.plot(v, a, s)
+
+        plt.show()
+
+
     def test_gen_firing_instances_Petersen2019_scd0(self):
         return
         mu_c = model_config.motorUnit()

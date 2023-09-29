@@ -1,6 +1,7 @@
 use numpy::{
-    ndarray::{Array, Array1, ArrayD, ArrayViewD, ArrayViewMutD, Dim},
-    IntoPyArray, Ix1, IxDyn, PyArray1, PyArrayDyn, PyReadonlyArray, PyReadonlyArrayDyn, ToPyArray,
+    ndarray::{Array, Array1, Array2, ArrayD, ArrayViewD, ArrayViewMutD, Dim},
+    IntoPyArray, Ix1, IxDyn, PyArray1, PyArray2, PyArrayDyn, PyReadonlyArray, PyReadonlyArrayDyn,
+    ToPyArray,
 };
 use pyo3::prelude::*;
 use pyo3::types::*;
@@ -147,7 +148,7 @@ impl TimeSpan {
 }
 
 fn generate_firing_instances_peterson_2019<T>(
-    cd_t: Box<T>,
+    cd_t: &Box<T>,
     time_span: TimeSpan,
     firing_rate: FiringRatePeterson2019,
 ) -> Array1<f64>
@@ -203,6 +204,60 @@ where
 //      that takes one skalar argument that is the time and reuturns the common drive a time t.
 //
 #[pyfunction]
+#[pyo3(name = "batch_generate_firing_instances_peterson_2019")]
+fn wrap_batch_generate_firing_instances_peterson_2019<'a>(
+    py: Python<'a>,
+    motor_unit_configs: &'a PyList,
+    time_span: &'a PyTuple,
+    commondrive_kind: &str,
+    args: &PyAny,
+) -> &'a PyList {
+    //let t_start = Instant::now();
+    let cd_t: Option<Box<dyn CdT>> = match commondrive_kind {
+        "trapez" => {
+            let arg_list: Vec<f64> = args.downcast::<PyList>().unwrap().extract().unwrap();
+            Some(Box::new(RCdT::new(GenericCdFunctions::Trapez, &arg_list)))
+        }
+        "PyFn" => Some(Box::new(PyCdT::new(
+            py,
+            args.downcast::<PyFunction>().unwrap(),
+        ))),
+        _ => None,
+    };
+
+    let cd_t = cd_t.unwrap();
+
+    let mut results: Vec<&PyArray1<f64>> = Vec::with_capacity(1000);
+
+    for motor_unit_config in motor_unit_configs {
+        let frp2019 = FiringRatePeterson2019::new(motor_unit_config);
+        let ar1 = generate_firing_instances_peterson_2019(
+            &cd_t,
+            TimeSpan::from_py_tuple(time_span),
+            frp2019,
+        );
+
+        results.push(ar1.to_pyarray(py))
+    }
+
+    //let duration = t_start.elapsed();
+    //eprintln!("Time elapsed {:?}", duration);
+
+    PyList::new(py, results)
+}
+
+// 'wrap_generate_firing_instances_peterson_2019' is the function that is called from python
+//
+// the arguement py is consumed and contains a reference to the python ineterpreter that is calling
+// this function.
+//
+// kind encodes the commondrive function kind as a string valid values arguement
+//      - "trapez": in this case args is a list of parameters that is used to configure the trapez
+//      function
+//      - "PyFn": in this case args is a reference to a python function (t: f64) -> f64
+//      that takes one skalar argument that is the time and reuturns the common drive a time t.
+//
+#[pyfunction]
 #[pyo3(name = "generate_firing_instances_peterson_2019")]
 fn wrap_generate_firing_instances_peterson_2019<'a>(
     py: Python<'a>,
@@ -224,12 +279,11 @@ fn wrap_generate_firing_instances_peterson_2019<'a>(
         _ => None,
     };
 
+    let a = a.unwrap();
+
     let frp2019 = FiringRatePeterson2019::new(motor_unit_config);
-    let ar1 = generate_firing_instances_peterson_2019(
-        a.unwrap(),
-        TimeSpan::from_py_tuple(time_span),
-        frp2019,
-    );
+    let ar1 =
+        generate_firing_instances_peterson_2019(&a, TimeSpan::from_py_tuple(time_span), frp2019);
 
     //let duration = t_start.elapsed();
     //eprintln!("Time elapsed {:?}", duration);
@@ -266,6 +320,10 @@ fn get_firing_rate<'a>(
 fn lib<'py>(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(
         wrap_generate_firing_instances_peterson_2019,
+        m
+    )?)?;
+    m.add_function(wrap_pyfunction!(
+        wrap_batch_generate_firing_instances_peterson_2019,
         m
     )?)?;
     m.add_function(wrap_pyfunction!(get_firing_rate, m)?)?;
