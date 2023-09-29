@@ -9,4 +9,5 @@ name = "emg_hom_iso_unbound"
 crate-type = ["cdylib"]
 
 [dependencies]
-pyo3 = "0.19.0"
+numpy = "0.19"
+pyo3 = {version = "0.19.0", features = ["extension-module"]}

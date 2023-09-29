@@ -1,6 +1,12 @@
 import unittest
 import pickle
-from emg_hom_iso_unbound import MUAP_firing_frequenzy, model_config
+import timeit
+
+import time
+
+from numpy.random import default_rng
+
+from emg_hom_iso_unbound import MUAP_firing_frequenzy, model_config, lib
 
 import numpy as np
 
@@ -16,7 +22,61 @@ class test_MUAP_firing_frequenzy(unittest.TestCase):
 
         self.assertEqual(ftg.get_firing_rate(0), 0.0)
 
+    def test_recti_config_rust(self):
+        mu_c = model_config.motorUnit()
+        mu_c.firing_behavior = model_config.firingBehavior()
+        
+        mu_c.firing_behavior.firing_frequenzy.C1 = 20.0
+        mu_c.firing_behavior.firing_frequenzy.C2 =  1.5 
+        mu_c.firing_behavior.firing_frequenzy.C3 = 30
+        mu_c.firing_behavior.firing_frequenzy.C4 = 13
+        mu_c.firing_behavior.firing_frequenzy.C5 =  8
+        mu_c.firing_behavior.firing_frequenzy.C6 =  8
+        mu_c.firing_behavior.firing_frequenzy.C7 =  0.05
+
+
+        lams_rust = []
+        lams = []
+        scds = [0, 0.1, 0.15, 0.25, 0.3]
+        cd_vec = np.arange(0,1, 1e-3)
+
+        times = []
+
+        for scd in scds:
+            mu_c.firing_behavior.start_common_drive = scd
+            ftg = MUAP_firing_frequenzy.FiringTrain_generator(mu_c)
+
+            t1 = time.perf_counter() #time.perf_counter(), time.process_time()
+            lam_r :'np.ndarray' = lib.get_firing_rate(mu_c, cd_vec)
+            lams_rust.append(lam_r)
+            t2 = time.perf_counter() #, time.process_time()
+            lam :'np.ndarray' = np.array([ ftg.get_firing_rate(cd) for cd in cd_vec])
+            lams.append(lam)
+            t3 = time.perf_counter()#, time.process_time()
+
+            d_r = t2-t1
+            d_p = t3-t1
+
+            times.append((d_r, d_p))
+
+            plt.plot(cd_vec, lam_r, label="start_common_drive = {}".format(scd))
+
+            equal = ( (np.isnan(lam_r) == np.isnan(lam)).all() 
+                and (lam_r[~np.isnan(lam_r)] == lam[~np.isnan(lam)]).all())
+            self.assertTrue(equal)
+
+            plt.plot(cd_vec, lam, label="start_common_drive = {}".format(scd))
+
+        plt.ylim((0,45))
+        plt.title("rust")
+        plt.legend()
+        plt.show()
+
+        import pdb; pdb.set_trace()
+
+
     def test_recti_cofnig(self):
+        return
         mu_c = model_config.motorUnit()
         mu_c.firing_behavior = model_config.firingBehavior()
         
