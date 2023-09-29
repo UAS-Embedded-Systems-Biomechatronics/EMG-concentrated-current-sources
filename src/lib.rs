@@ -8,8 +8,7 @@ use pyo3::types::*;
 use rand::prelude::*;
 use rand_distr::StandardNormal;
 
-use rand::rngs::SmallRng;
-use rand::{Rng, SeedableRng};
+use rand::Rng;
 
 use std::time::{Duration, Instant};
 
@@ -184,14 +183,7 @@ where
         let sd = c * isi_star_j;
         let normal_rand: f64 = rng.sample(StandardNormal);
         let isi_j: f64 = normal_rand * sd + isi_star_j;
-        //let isi_j: f64 = thread_rng().sample::<f64, _>(StandardNormal) * sd + isi_star_j;
-        /*
-        ISI_j = np.random.normal(ISI_star_j // scale is the standart deviation
-                     , scale=sd)            //                 *
-                                            // here c(CD) * ISI
-                                            //                 j
 
-        */
         t += isi_j;
         firing_instances.push(t);
     }
@@ -211,6 +203,7 @@ where
 //      that takes one skalar argument that is the time and reuturns the common drive a time t.
 //
 #[pyfunction]
+#[pyo3(name = "generate_firing_instances_peterson_2019")]
 fn wrap_generate_firing_instances_peterson_2019<'a>(
     py: Python<'a>,
     motor_unit_config: &'a PyAny,
@@ -239,14 +232,9 @@ fn wrap_generate_firing_instances_peterson_2019<'a>(
     );
 
     //let duration = t_start.elapsed();
-
     //eprintln!("Time elapsed {:?}", duration);
 
     ar1.to_pyarray(py)
-}
-
-fn np_vec_test(a: ArrayViewD<'_, f64>, b: ArrayViewD<'_, f64>) -> ArrayD<f64> {
-    &a + &b + 100.0
 }
 
 #[pyfunction()]
@@ -273,39 +261,9 @@ fn get_firing_rate<'a>(
     firing_rate.to_pyarray(py)
 }
 
-#[pyfunction]
-/// This is an example on how to call a generic python function from
-/// Rust. This can be used as a template for user to pass python functions
-/// that need to be run.
-///
-/// This approach needs a vaild python gil reference.
-///
-fn cf<'a>(py: Python<'a>, f: &'a pyo3::types::PyFunction) -> Result<&'a PyAny, PyErr> {
-    let args = ("hallo from rust",);
-    let kwargs = pyo3::types::PyDict::new(py);
-    let _ = f.call(args, Some(kwargs));
-    f.call(args, None)
-}
-
-#[pyfunction]
-#[pyo3(name = "axpy")]
-fn axpy_py<'py>(
-    py: Python<'py>,
-    a: PyReadonlyArrayDyn<'py, f64>,
-    b: PyReadonlyArrayDyn<'py, f64>,
-) -> &'py PyArrayDyn<f64> {
-    let a = a.as_array();
-    let b = b.as_array();
-
-    let z = np_vec_test(a, b);
-    z.into_pyarray(py)
-}
-
 /// A Python module implemented in Rust.
 #[pymodule]
 fn lib<'py>(_py: Python, m: &PyModule) -> PyResult<()> {
-    m.add_function(wrap_pyfunction!(axpy_py, m)?)?;
-    m.add_function(wrap_pyfunction!(cf, m)?)?;
     m.add_function(wrap_pyfunction!(
         wrap_generate_firing_instances_peterson_2019,
         m

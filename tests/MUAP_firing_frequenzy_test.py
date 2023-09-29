@@ -99,7 +99,7 @@ class test_MUAP_firing_frequenzy(unittest.TestCase):
                                                         , (0,3))
             firing_vec_py = np.array(ftg.generate_firing_instances())
 
-            firing_vec = lib.wrap_generate_firing_instances_peterson_2019(
+            firing_vec = lib.generate_firing_instances_peterson_2019(
                 mu_c, (0,3), "PyFn", fn_common_drive)
 
             for v, s in zip([firing_vec_py, firing_vec], ['-*r', '-^b']):
@@ -177,7 +177,7 @@ class test_MUAP_firing_frequenzy(unittest.TestCase):
 
         firing_vec = np.array(ftg.generate_firing_instances())
         """
-        firing_vec = lib.wrap_generate_firing_instances_peterson_2019(
+        firing_vec = lib.generate_firing_instances_peterson_2019(
                 mu_c, time_span, "trapez", [param_dict[key] for key in ['a', 'b', 'c', 'd'] ] )
 
 
@@ -227,7 +227,7 @@ class test_MUAP_firing_frequenzy(unittest.TestCase):
         p = [param_dict[key] for key in ['a', 'b', 'c', 'd']]
 
         t1 = time.perf_counter()
-        firing_vec = lib.wrap_generate_firing_instances_peterson_2019(
+        firing_vec = lib.generate_firing_instances_peterson_2019(
                 mu_c, time_span, "trapez",  p )
         t2 = time.perf_counter()
 
