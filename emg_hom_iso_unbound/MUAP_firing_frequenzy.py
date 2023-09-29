@@ -134,8 +134,9 @@ def generate_firing_instances_Petersen2019(
     while t<= time_span[1]:
         CD = CD_t(t)
         if CD < start_common_drive:
-            t = find_next_activation(CD_t, current_t=t, start_common_drive=start_common_drive, time_span=time_span)
+            t = t + 1e-5
             continue
+
         ISI_star_j = 1 / firing_rate(CD)
 
         a = (
