@@ -201,6 +201,7 @@ for muscle in tqdm.tqdm(conf_m_list, desc="sim_muscle", total=len(conf_m_list)):
             , electrodes = electrode_matrix
             , export_vtk = False
             , export_pyz = True
+            , calc_sum_potential = True
             )
 
     m_id += 1
@@ -237,9 +238,6 @@ def remote_function(root_conf_dict, m_id):
             .motor_units[firing_vec_idx]\
             .firing_pattern = firing_vec_list[firing_vec_idx].tolist()
 
-    with open(path + '/firing_vec_list.pkl', 'wb') as f:
-        pickle.dump(firing_vec_list, f)
-
     simJobs = sim_infrastructure. \
             simJobsByModelConfig(
                       config      = root_conf
@@ -248,9 +246,7 @@ def remote_function(root_conf_dict, m_id):
 
     print("#"*5 + "  execute sim  " + "#"*5)
     
-    simJobs.execute_all()
-    #sim_infrastructure. \
-            #execute_sim_jobs(jobs=simJobs)
+    simJobs.execute_all(showProgressbar=False)
 
 
 ray.get([ remote_function.remote(id_root_conf_dict, idx) for idx in root_conf_dict ])
