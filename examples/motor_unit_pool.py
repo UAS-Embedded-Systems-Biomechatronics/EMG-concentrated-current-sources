@@ -13,7 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 
-from emg_hom_iso_unbound import sim_infrastructure, model_config
+from emg_hom_iso_unbound import sim_infrastructure, model_config, lib
 
 import numpy as np
 import os
@@ -33,7 +33,7 @@ _mps = _m / _s
 
 # MF_pdfMU
 @numba.jit
-def y(i, R=188.6, a=21,  n = 774):
+def n_mf(i, R=188.6, a=21,  n = 774):
     return int(a * np.exp( np.log(R) / n  * i) + 0.5)
 
 def gen_velocity_vector(
@@ -130,7 +130,7 @@ N_MU   = 774
 mu_ids = np.arange(0, N_MU, 1)
 
 subset_mu_ids = np.arange(400, N_MU, 50)
-N_mf_per_id   = np.array([ y(idx, n=N_MU) for idx in mu_ids])
+N_mf_per_id   = np.array([ n_mf(idx, n=N_MU) for idx in mu_ids])
 
 D_cvs = gen_velocity_vector(mu_ids, N_mf_per_id, subset_mu_ids = subset_mu_ids)
 
@@ -161,9 +161,6 @@ for muscle_gen_MF in tqdm.tqdm(Muscle_gen_MF, desc = "muscle"):
         motorUnit.firing_behavior.firing_frequenzy.C7 =  0.05
 
         motorUnit.firing_behavior.start_common_drive = common_drive_start_vec[mu_idx]
-
-
-
 
         for idx_mf in tqdm.tqdm(range(D_cvs[mu_idx]['cv_N']), desc="muscle_fiber", leave=False):
             mf = muscle_gen_MF()
@@ -208,10 +205,12 @@ for muscle in tqdm.tqdm(conf_m_list, desc="sim_muscle", total=len(conf_m_list)):
 ray.init()
 id_root_conf_dict = ray.put(root_conf_dict)
 
+trapez_func_param_dict = { 'a' : 1, 'b' : 2, 'c' : 3, 'd' : 4 }
+
 @ray.remote
 def remote_function(root_conf_dict, m_id):
     root_conf = root_conf_dict[m_id]
-    path = os.path.join('.', f'MUAP_center_tracking_v1_muscle_{m_id}')
+    path = os.path.join('.', f'MUAP_train_center_tracking_v1_muscle_{m_id}')
 
     try:
         os.mkdir(path)
@@ -231,4 +230,21 @@ def remote_function(root_conf_dict, m_id):
     sim_infrastructure. \
             execute_sim_jobs(jobs=simJobs)
 
+    firing_vec_list = lib.batch_generate_firing_instances_peterson_2019(
+          root_conf.motor_units
+        , (0, 5)
+        , "trapez"
+        , [trapez_func_param_dict[key] for key in ['a', 'b', 'c', 'd']]
+    )
+
+    with open(path + 'firing_vec_list.pkl', 'wb') as f:
+        pickle.dump(f, firing_vec_list)
+
 ray.get([ remote_function.remote(id_root_conf_dict, idx) for idx in root_conf_dict ])
+
+
+#After Simulation generate firing instances and then calculate the complete EMG signal 
+#for each mu. Maybe this can be done within the ray thread pool?
+# figure out a place to save the firing events...
+
+
