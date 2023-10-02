@@ -393,8 +393,8 @@ class firingBehavior(base_config):
     firing_frequenzy   = traits.api.Instance(firingFreq_config, firingFreq_Petersen2019)
     start_common_drive = traits.api.Float(0)
 
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, *args, **kwargs) -> None:
+        super(firingBehavior, self).__init__(*args, **kwargs)
 
 
 
