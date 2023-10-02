@@ -223,6 +223,23 @@ def remote_function(root_conf_dict, m_id):
     with open(path + "/d_cvs.pkl", 'wb') as f:
         pickle.dump( D_cvs, f )
 
+
+    firing_vec_list = lib.batch_generate_firing_instances_peterson_2019(
+          root_conf.muscle.motor_units
+        , (0, 5)
+        , "trapez"
+        , [trapez_func_param_dict[key] for key in ['a', 'b', 'c', 'd']]
+    )
+
+    for firing_vec_idx in range(len(firing_vec_list)):
+        root_conf\
+            .muscle\
+            .motor_units[firing_vec_idx]\
+            .firing_pattern = firing_vec_list[firing_vec_idx].tolist()
+
+    with open(path + '/firing_vec_list.pkl', 'wb') as f:
+        pickle.dump(firing_vec_list, f)
+
     simJobs = sim_infrastructure. \
             simJobsByModelConfig(
                       config      = root_conf
@@ -235,15 +252,6 @@ def remote_function(root_conf_dict, m_id):
     #sim_infrastructure. \
             #execute_sim_jobs(jobs=simJobs)
 
-    firing_vec_list = lib.batch_generate_firing_instances_peterson_2019(
-          root_conf.muscle.motor_units
-        , (0, 5)
-        , "trapez"
-        , [trapez_func_param_dict[key] for key in ['a', 'b', 'c', 'd']]
-    )
-
-    with open(path + '/firing_vec_list.pkl', 'wb') as f:
-        pickle.dump(firing_vec_list, f)
 
 ray.get([ remote_function.remote(id_root_conf_dict, idx) for idx in root_conf_dict ])
 
@@ -251,5 +259,3 @@ ray.get([ remote_function.remote(id_root_conf_dict, idx) for idx in root_conf_di
 #After Simulation generate firing instances and then calculate the complete EMG signal 
 #for each mu. Maybe this can be done within the ray thread pool?
 # figure out a place to save the firing events...
-
-
