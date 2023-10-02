@@ -14,6 +14,7 @@
 # ==============================================================================
 
 from emg_hom_iso_unbound import sim_infrastructure, model_config, lib
+from typing import Dict
 
 import numpy as np
 import os
@@ -75,7 +76,7 @@ def gen_commondrive_start_vector_Fuglevasnd_1993(
          mu_ids : 'np.ndarray' # shape == (N_dix,)
         , N_mu   : int
         , common_drive_full : float
-    ) -> 'np.ndarray':
+    ) -> Dict[int, float]:
     """
     based on Fuglevand et al. (1993) as cited in eq (1) of:
         A Comprehensive Mathematical Model of Motor Unit Pool Organization, 
@@ -84,7 +85,9 @@ def gen_commondrive_start_vector_Fuglevasnd_1993(
     """
     a = np.log(100* common_drive_full) / N_mu # scalar
     CD_start_vec = np.exp(a* mu_ids) / 100
-    return CD_start_vec
+
+    CD_start_dict = { mu_ids[idx]: CD_start_vec[idx] for idx in range(len(mu_ids))}
+    return CD_start_dict
 
 
 def gen_commondrive_start_vector_deLuca2012(
@@ -135,7 +138,7 @@ N_mf_per_id   = np.array([ n_mf(idx, n=N_MU) for idx in mu_ids])
 D_cvs = gen_velocity_vector(mu_ids, N_mf_per_id, subset_mu_ids = subset_mu_ids)
 
 assumed_full_commonDrive = 0.8
-common_drive_start_vec = gen_commondrive_start_vector_Fuglevasnd_1993(
+common_drive_start_dict = gen_commondrive_start_vector_Fuglevasnd_1993(
     subset_mu_ids, N_MU, assumed_full_commonDrive)
 
 max_L = 0.0
@@ -160,7 +163,7 @@ for muscle_gen_MF in tqdm.tqdm(Muscle_gen_MF, desc = "muscle"):
         motorUnit.firing_behavior.firing_frequenzy.C6 =  8
         motorUnit.firing_behavior.firing_frequenzy.C7 =  0.05
 
-        motorUnit.firing_behavior.start_common_drive = common_drive_start_vec[mu_idx]
+        motorUnit.firing_behavior.start_common_drive = common_drive_start_dict[mu_idx]
 
         for idx_mf in tqdm.tqdm(range(D_cvs[mu_idx]['cv_N']), desc="muscle_fiber", leave=False):
             mf = muscle_gen_MF()
@@ -227,18 +230,20 @@ def remote_function(root_conf_dict, m_id):
                     )
 
     print("#"*5 + "  execute sim  " + "#"*5)
-    sim_infrastructure. \
-            execute_sim_jobs(jobs=simJobs)
+    
+    simJobs.execute_all()
+    #sim_infrastructure. \
+            #execute_sim_jobs(jobs=simJobs)
 
     firing_vec_list = lib.batch_generate_firing_instances_peterson_2019(
-          root_conf.motor_units
+          root_conf.muscle.motor_units
         , (0, 5)
         , "trapez"
         , [trapez_func_param_dict[key] for key in ['a', 'b', 'c', 'd']]
     )
 
-    with open(path + 'firing_vec_list.pkl', 'wb') as f:
-        pickle.dump(f, firing_vec_list)
+    with open(path + '/firing_vec_list.pkl', 'wb') as f:
+        pickle.dump(firing_vec_list, f)
 
 ray.get([ remote_function.remote(id_root_conf_dict, idx) for idx in root_conf_dict ])
 
