@@ -25,6 +25,8 @@ import scipy.signal
 
 from tqdm.auto import tqdm
 
+from . import MUAP_trains
+
 import os
 
 import re
@@ -471,3 +473,51 @@ def plotSum_df(   sum_df
                           , minor=False)
 
     return fig, ax
+
+def gen_full_EMG(df_npz, sim_res_list, muscle_config):
+    shifted_list = []
+    shifted_time_list = []
+    
+    for mu_id in df_npz.idx_motor_unit.unique():        
+        sim_res_obj = sim_res_list[mu_id]
+        ta, muap_array = MUAP_trains.gen_muap_for_firing_train(
+            muscle_config.motor_units[mu_id],
+            sim_res_obj.res_mu[mu_id],
+            sim_res_obj.sum_df_DD['time_s'].to_numpy()
+        )
+    
+        shifted_time_list.append(ta)
+        shifted_list.append(muap_array)
+        
+    shortest_list_id = np.argmin([ len(a) for a in shifted_time_list])
+    assert np.all([ shifted_time_list[shortest_list_id][-1] in shifted_time_list[0] for idx in range(len(shifted_time_list))])
+
+    padded_shifted_list = shifted_list.copy()
+
+    largest_time_vec_length = np.max([s.shape[3] for s in shifted_list])
+    idx_largest_time_vec    = np.argmax([s.shape[3] for s in shifted_list])
+
+    to_small_idx = [idx for idx in range(len(shifted_list)) if shifted_list[idx].shape[3] < largest_time_vec_length]
+
+    for idx in to_small_idx:
+        padded_shifted_list[idx] = np.pad(shifted_list[idx], [(0, 0) for idx in range(3)] + [(0, largest_time_vec_length - shifted_list[idx].shape[3]) ] )
+
+    assert (padded_shifted_list[0] == padded_shifted_list[1]).all() == False
+    
+    sum_EMG = np.zeros_like(padded_shifted_list[0])
+    EMG_singleMUs_Mono = {}
+    
+    time_s  =  shifted_time_list[idx_largest_time_vec]
+    
+    for a, mu_idx in zip(padded_shifted_list, range(len(padded_shifted_list))):
+        EMG_singleMUs_Mono[mu_idx] = pd.DataFrame({e_id : a[e_id,0,0,:] for e_id in list(range(sum_EMG.shape[0]))[::]} )
+        EMG_singleMUs_Mono[mu_idx]['time_s'] = time_s
+        sum_EMG += a
+        
+    EMG_sum_df_Mono = pd.DataFrame({e_id : sum_EMG[e_id,0,0,:] for e_id in list(range(sum_EMG.shape[0]))[::]} )
+    EMG_sum_df_Mono['time_s'] = time_s
+    
+    return {
+        'EMG_sum_df_Mono' : EMG_sum_df_Mono,
+        'EMG_singleMUs_Mono' : EMG_singleMUs_Mono
+    }
