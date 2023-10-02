@@ -30,6 +30,48 @@ import os
 import re
 
 
+def generate_df_sim_res_muscles_from_sum_npz(glob_list, multibleMuscels=False):
+    """
+    TODO documentation needed
+    """
+    def get_id(str_regex : str, str_in : str) -> int:
+        findall = re.findall(str_regex, str_in)
+        len(findall) == 0 , "more than one object matched for {} in\n\t".format(str_regex, str_in)
+        return int(findall[0])
+
+    muscle_id_list = []
+    mu_id_list     = []
+    mf_id_list     = []
+    run_id_list    = []
+
+    entry_list     = []
+
+    for entry in tqdm(glob_list):
+        if multibleMuscels:
+            muscle_id = get_id("\_muscle\_(\d+)", entry)
+        else:
+            muscle_id = 0 
+
+        muscle_id_list.append(muscle_id)
+
+        mu_id     = get_id(r"e_sum_pot_idx_motor_unit_(\d+)\.npz", entry)
+        mu_id_list.append(mu_id)
+
+        mf_id_list.append(0)
+
+        entry_list.append(entry)
+        
+    df_ids2 = pd.DataFrame({
+          "idx_muscle" : muscle_id_list
+        , "idx_motor_unit" : mu_id_list
+        , "idx_muscle_fiber" : mf_id_list
+        , "file_path" : entry_list})
+
+    df_ids2["unique_idx_motor_unit"], _ = pd.factorize(pd.MultiIndex.from_frame(df_ids2[['idx_muscle', 'idx_motor_unit']]))
+
+    return df_ids2
+
+
 
 def generate_df_sim_res_muscles(glob_list, multibleMuscels=False):
     """
