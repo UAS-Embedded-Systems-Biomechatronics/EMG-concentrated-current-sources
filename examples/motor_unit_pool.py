@@ -13,7 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 
-from emg_hom_iso_unbound import sim_infrastructure, model_config, lib
+from emg_hom_iso_unbound import sim_infrastructure, model_config, lib, tools
 from typing import Dict
 
 import numpy as np
@@ -25,6 +25,7 @@ import numba
 import pickle
 
 import tqdm
+import glob
 
 import ray
 
@@ -200,7 +201,7 @@ for muscle in tqdm.tqdm(conf_m_list, desc="sim_muscle", total=len(conf_m_list)):
             , time = time
             , electrodes = electrode_matrix
             , export_vtk = False
-            , export_pyz = True
+            , export_pyz = False
             , calc_sum_potential = True
             )
 
@@ -227,7 +228,7 @@ def remote_function(root_conf_dict, m_id):
 
     firing_vec_list = lib.batch_generate_firing_instances_peterson_2019(
           root_conf.muscle.motor_units
-        , (0, 5)
+        , (0, 6)
         , "trapez"
         , [trapez_func_param_dict[key] for key in ['a', 'b', 'c', 'd']]
     )
@@ -248,6 +249,30 @@ def remote_function(root_conf_dict, m_id):
     
     simJobs.execute_all(showProgressbar=False)
 
+    print("#"*5 + "  calc full EMG " + "#"*5)
+
+    mu_list_str = glob.glob(path + "/e_sum_pot_idx_motor_unit_*.npz")
+    df_npz = tools.generate_df_sim_res_muscles_from_sum_npz(mu_list_str)
+
+    sim_res = []
+    for mu_id in df_npz.idx_motor_unit.unique():
+        sr =  tools.npz_sEMG_sim_results(
+              sim_project_dir = path + "/"
+            , npz_file_df     = df_npz[df_npz.unique_idx_motor_unit == mu_id]
+            , idx_muscle      = 0
+            , idx_motor_unit  = mu_id
+        , npz_potential_key='e_sumPot')
+        
+        sim_res.append(sr)
+        assert int(len(sim_res) - 1) == mu_id
+
+    assert len(df_npz.idx_muscle.unique()) == 1, "only a single muscle is allowed in this script"
+    assert (df_npz.idx_motor_unit == df_npz.unique_idx_motor_unit).all()
+
+    fullEMG_obj = tools.gen_full_EMG(df_npz, sim_res, root_conf.muscle)
+
+    with open(path + "/fullEMG_of_muscle.pkl", "wb") as f:
+        pickle.dump(fullEMG_obj, f)
 
 ray.get([ remote_function.remote(id_root_conf_dict, idx) for idx in root_conf_dict ])
 
