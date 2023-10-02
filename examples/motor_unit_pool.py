@@ -133,7 +133,7 @@ Muscle_gen_MF.append(
 N_MU   = 774
 mu_ids = np.arange(0, N_MU, 1)
 
-subset_mu_ids = np.arange(400, N_MU, 50)
+subset_mu_ids = np.arange(0, N_MU, 10)
 N_mf_per_id   = np.array([ n_mf(idx, n=N_MU) for idx in mu_ids])
 
 D_cvs = gen_velocity_vector(mu_ids, N_mf_per_id, subset_mu_ids = subset_mu_ids)
@@ -183,11 +183,11 @@ max_time = ( max_L ) / motorUnit.v
 
 _kHz = 1e3
 
-fs = 5 * _kHz
+fs = 20 * _kHz
 time = np.arange(0, max_time, 1/fs)
 
 electrode_matrix = model_config.electrodes(
-          x =  np.arange(-17*_cm, 17*_cm, 5*_mm)
+          x =  np.arange(-10*_cm, 10*_cm, 5*_mm)
         , y =  np.array([0])
         , z =  np.array([2*_cm])
         )
@@ -247,7 +247,7 @@ def remote_function(root_conf_dict, m_id):
 
     print("#"*5 + "  execute sim  " + "#"*5)
     
-    simJobs.execute_all(showProgressbar=False)
+    simJobs.execute_all(showProgressbar=True)
 
     print("#"*5 + "  calc full EMG " + "#"*5)
 
