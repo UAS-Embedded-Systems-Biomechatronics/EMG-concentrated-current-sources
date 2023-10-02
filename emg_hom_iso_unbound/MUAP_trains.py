@@ -45,7 +45,7 @@ def gen_muap_for_firing_train(
         muap_array = time_shift_template(
             motor_unit_potential, event, dt, muap_array)
 
-    return muap_array
+    return (t_array, muap_array)
 
 
 

@@ -83,7 +83,7 @@ class test_MUAP_trains(unittest.TestCase):
 
         time_template = np.arange(0, 5*dt, dt)
 
-        muap_array = MUAP_trains.gen_muap_for_firing_train( 
+        (time_array, muap_array)  = MUAP_trains.gen_muap_for_firing_train( 
             mu_config, data, time_template,)
 
         self.assertEqual(muap_array[0,0,0, n_orig_shift],   1)
