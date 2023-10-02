@@ -235,19 +235,21 @@ class npz_sEMG_sim_results(sEMG_sim_result):
                  , electrode_slice_tuple = None
                  , idx_motor_unit = 0
                  , idx_muscle = 0
-                 , flat_electrodes = False):
+                 , flat_electrodes = False
+                 , npz_potential_key = "electrode_potentials"):
         """
         File df must contain a column called "file_path", "unique_idx_motor_unit"
         """
         self._flat_electrodes = flat_electrodes
-        
+
         self._electrode_slice_tuple = electrode_slice_tuple
-        self._load_hom_iso_unbound_sim_pd_dir(sim_project_dir, npz_file_df)
+
+        self._load_hom_iso_unbound_sim_pd_dir(sim_project_dir, npz_file_df, npz_potential_key)
         
         self.idx_motor_unit = idx_motor_unit
         self.idx_muscle     = idx_muscle
 
-    def _load_hom_iso_unbound_sim_pd_dir(self, projectDir, _npz_file_df):
+    def _load_hom_iso_unbound_sim_pd_dir(self, projectDir, _npz_file_df, npz_potential_key):
         self._load_hom_iso_unbound_sim_pd_dir_config(projectDir)
 
         idx_unique_mu_list = _npz_file_df["unique_idx_motor_unit"].unique()
@@ -258,9 +260,9 @@ class npz_sEMG_sim_results(sEMG_sim_result):
         for idx in _npz_file_df.index:
             npz_file_disc            = np.load(_npz_file_df.loc[idx]["file_path"])
             if self._electrode_slice_tuple is None:
-                _electrode_pot[idx] = npz_file_disc["electrode_potentials"]
+                _electrode_pot[idx] = npz_file_disc[npz_potential_key]
             else:
-                _electrode_pot[idx] = npz_file_disc["electrode_potentials"][self._electrode_slice_tuple]
+                _electrode_pot[idx] = npz_file_disc[npz_potential_key][self._electrode_slice_tuple]
 
             
             npz_file_disc.close()
