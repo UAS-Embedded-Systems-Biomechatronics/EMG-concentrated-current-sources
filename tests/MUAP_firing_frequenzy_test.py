@@ -142,6 +142,7 @@ class test_MUAP_firing_frequenzy(unittest.TestCase):
                 a = np.linspace(0, 1, len(v))
                 plt.plot(v, a, s)
 
+        plt.title("batch processing of mu_c s")
         plt.show()
 
 
