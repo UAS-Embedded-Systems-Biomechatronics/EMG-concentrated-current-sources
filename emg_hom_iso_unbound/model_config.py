@@ -267,14 +267,15 @@ def MF_Merletti1999(W_I, R, L_L, W_TL, L_R, W_TR, p_IZ = np.array([0,0,0])):
     r   = rand_vec[1] * R
     phi = rand_vec[2] * 2*np.pi
 
+    dx_I_P = (rand_vec[0] - 0.5) * W_I
     I_P = np.array([
-          [ (rand_vec[0] - 0.5) * W_I + p_IZ[0] ] # x
+          [  dx_I_P + p_IZ[0] ] # x
         , [ r * np.cos(phi) + p_IZ[1] ]           # y
         , [ r * np.sin(phi) + p_IZ[2] ]           # z
         ])
 
-    l_l =  L_L + (rand_vec[3]-0.5) * W_TL # actual distance between IP and lenft muscle fiber end
-    l_r =  L_R + (rand_vec[4]-0.5) * W_TR # actual distance between IP and right muscle fiber end
+    l_l =  np.abs(- L_L + (rand_vec[3]-0.5) * W_TL - dx_I_P) # actual distance between IP and lenft muscle fiber end
+    l_r =  np.abs(  L_R + (rand_vec[4]-0.5) * W_TR - dx_I_P) # actual distance between IP and right muscle fiber end
 
     return _muscleFiber_factory(ip_location = I_P, left_length = l_l, right_length = l_r)
 
