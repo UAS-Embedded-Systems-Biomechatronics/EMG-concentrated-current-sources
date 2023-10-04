@@ -22,6 +22,9 @@ import typing
 import json
 import numpy as np
 
+_cm = 0.01
+_mm = 0.001
+
 
 class NumpyArrayEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -210,8 +213,35 @@ class muscleFiberRotation(base_config):
     y = traits.api.Float(0)
 
 
+class MF_Merletti1999_hyperparameters(base_config):
+    W_I = traits.api.Float(1*_cm)
+    L_L = traits.api.Float(5*_cm)
+    L_R = traits.api.Float(5*_cm)
 
-def MF_Merletti1999(W_I, R, L_L, W_TL, L_R, W_TR):
+    W_TL = traits.api.Float(0.5*_cm)
+    W_TR = traits.api.Float(0.5*_cm)
+
+    R   = traits.api.Float(1*_cm)
+    
+    P_IZ = traits.api.Array(shape=(3,), value=[0,0,0])
+
+    def generate_muscle_config(self):
+        return MF_Merletti1999(
+            W_I= self.W_I,
+            R  = self.R,
+
+            L_L=self.L_L,
+            W_TL=self.W_TL,
+
+            L_R = self.L_R,
+            W_TR= self.W_TR,
+
+            p_IZ = self.P_IZ
+        )
+
+
+
+def MF_Merletti1999(W_I, R, L_L, W_TL, L_R, W_TR, p_IZ = np.array([0,0,0])):
     r"""                                                         x x x x x    <- electrodes
                                                    --------------------------------------------------------------------
     musclefiber zone in z,y plane                                    .                             ^ h
@@ -238,9 +268,9 @@ def MF_Merletti1999(W_I, R, L_L, W_TL, L_R, W_TR):
     phi = rand_vec[2] * 2*np.pi
 
     I_P = np.array([
-          [ (rand_vec[0] - 0.5) * W_I ] # x
-        , [ r * np.cos(phi) ]           # y
-        , [ r * np.sin(phi) ]           # z
+          [ (rand_vec[0] - 0.5) * W_I + p_IZ[0] ] # x
+        , [ r * np.cos(phi) + p_IZ[1] ]           # y
+        , [ r * np.sin(phi) + p_IZ[2] ]           # z
         ])
 
     l_l =  L_L + (rand_vec[3]-0.5) * W_TL # actual distance between IP and lenft muscle fiber end
