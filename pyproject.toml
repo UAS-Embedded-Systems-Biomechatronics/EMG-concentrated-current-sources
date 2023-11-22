@@ -1,0 +1,49 @@
+[build-system]
+# do i really need setuptools here?
+requires = ["maturin>=1.3,<2.0", "setuptools"]
+build-backend = "maturin"
+
+[project]
+name = "hom_iso_unbound"
+version = "0.2.1"
+license = {file = "LICENSE"}
+authors = [
+  {name = "Malte Mechtenberg"}
+]
+maintainers = [
+  {name = "Malte Mechtenberg", email = "malte.mechtenberg@hsbi.de"}
+]
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Rust",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
+]
+dynamic = ["version"]
+dependencies = [ 
+		  "tensorflow==2.8.*"
+		, "numpy==1.23.3"
+    , "maturin"
+		, "vtk==9.0.3"
+		, "evtk"
+		, "ray==1.12.0"
+		, "pandas==1.5.3"
+		, "matplotlib"
+		, "numba==0.56.4"
+		, "scipy==1.9.1"
+		, "tqdm"
+		, "traits==6.4.1"
+		, "traits-stubs==6.4.0"
+		, "typing"
+]
+
+[project.optional-dependencies]
+test = [
+  "pytest"
+]
+#debug = [
+#  "conda-forge::ncurses"
+#]
+
+[tool.maturin]
+features = ["pyo3/extension-module"]
