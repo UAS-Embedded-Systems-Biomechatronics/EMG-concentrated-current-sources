@@ -243,7 +243,6 @@ def remote_function(root_conf_dict, m_id):
                     )
 
     print("#"*5 + "  execute sim  " + "#"*5)
-    sim_infrastructure. \
-            execute_sim_jobs(jobs=simJobs)
+    simJobs.execute_all()
 
 ray.get([ remote_function.remote(id_root_conf_dict, idx) for idx in root_conf_dict ])

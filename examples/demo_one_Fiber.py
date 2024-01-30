@@ -60,8 +60,7 @@ class demoOneFiber(object):
                    config=root_conf
                  , project_dir=path)
 
-        sim_infrastructure. \
-                execute_sim_jobs(jobs=simJobs)
+        simJobs.execute_all()
 
 if __name__ == "__main__":
     dF = demoOneFiber()

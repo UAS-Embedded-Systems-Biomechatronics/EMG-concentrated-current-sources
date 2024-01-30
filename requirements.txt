@@ -1,0 +1,16 @@
+tensorflow>=2.8
+numpy==1.23.3
+maturin
+vtk>=9.0.3
+pandas==1.5.3
+matplotlib
+numba>=0.56.4
+scipy>=1.9.1, <3
+tqdm
+traits==6.4.1
+traits-stubs==6.4.0
+typing
+ray>=1.12.0
+singleton-decorator
+
+evtk @ git+https://github.com/craig-warren/PyEVTK.git@aff5f1190822794d68394e07aedc66bc27b0af1f
