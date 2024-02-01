@@ -1,4 +1,4 @@
-name: semg-model_hiu_v0_x_x_devel
+name: semg-model_hiu_v0_2_2_devel
 channels:
   - defaults
 dependencies:

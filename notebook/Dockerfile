@@ -19,14 +19,14 @@ USER 1000:1000
 RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
 ENV PATH="${PATH}:/home/jovyan/.cargo/bin"
 
-ADD --chown=1000:1000 ./.git  /home/jovyan/work/semg-model_hiu_v0_x_x_devel/.git
-WORKDIR "/home/jovyan/work/semg-model_hiu_v0_x_x_devel"
+ADD --chown=1000:1000 ./.git  /home/jovyan/work/semg-model_hiu_v0_2_2_devel/.git
+WORKDIR "/home/jovyan/work/semg-model_hiu_v0_2_2_devel"
 RUN git checkout .
 
 RUN conda install mamba -y
 RUN mamba env create -f ./environment.yml 
 
-SHELL ["conda", "run", "-n", "semg-model_hiu_v0_x_x_devel", "/bin/bash", "-c"]
+SHELL ["conda", "run", "-n", "semg-model_hiu_v0_2_2_devel", "/bin/bash", "-c"]
 
 RUN pip install -e .
-RUN python3 -m ipykernel install --user --name semg-model_hiu_v0_x_x_devel
+RUN python3 -m ipykernel install --user --name semg-model_hiu_v0_2_2_devel

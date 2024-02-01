@@ -13,7 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 
-__version__ = "0.2.1"
+__version__ = "0.2.2"
 from . import lib
 
 __all__ = ["sim_infrastructure", "tools", "model_config", "lib"]
