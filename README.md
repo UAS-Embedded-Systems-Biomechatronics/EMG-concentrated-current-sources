@@ -15,11 +15,31 @@ The medium in which the muscle fibers are located is assumed to be homogeneous, 
 resistive. The EMG electrodes are simulated as point electrodes. The electrode potentials are
 calculated under qusistatic conditions.
 
+## Quickstart
+
+There is a docker container prepared that ca be used to use this
+software package together with jupyter notebook. To start the container you
+need to have [docker](https://www.docker.com/) installed.
+You can use the container [directly](./notebook/Dockerfile) or use
+`docker-compose`. That is an additionally software you might need to install
+seperately. Go to the root of this repository and run:
+
+```bash
+docker-compose up notebook
+```
+
+Note that only the HEAD of the current branch is used in the docker container.
+
 ## Installation
 
+An installer might be added in future for now a few manual steps are needed
+as listed below.
+
 An Anaconda enviroment file, containing all nessecary dependencies, is provided with `./environment.yml`.
-To install the environement you need to have anaconda installed. If anaconda is installed and in your
-system `PATH` execute:
+To install the environement you need to have anaconda installed.
+And the rust programming language build and package management system cargo (install via [rustup](https://rustup.rs/)).
+
+If anaconda and cargo is installed and in your system `PATH` execute:
 
 ```bash
 conda env create -f ./environment.yml
