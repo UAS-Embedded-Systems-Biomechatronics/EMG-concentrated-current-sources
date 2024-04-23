@@ -157,8 +157,10 @@ class tf_model(tf.Module):
             + tf.pow(func_c_r_m_global_z - tf_z,2)
         )
 
-        r_fin_l = tf.where(tf.math.is_nan(r_fin_l_nan) , tf.ones_like(r_fin_l_nan) , r_fin_l_nan)
-        r_fin_r = tf.where(tf.math.is_nan(r_fin_r_nan) , tf.ones_like(r_fin_r_nan) , r_fin_r_nan)
+        #r_fin_l = tf.where(tf.math.is_nan(r_fin_l_nan) , tf.ones_like(r_fin_l_nan) , r_fin_l_nan)
+        #r_fin_r = tf.where(tf.math.is_nan(r_fin_r_nan) , tf.ones_like(r_fin_r_nan) , r_fin_r_nan)
+        r_fin_l = r_fin_l_nan
+        r_fin_r = r_fin_r_nan
 
         inSum_Big_l = func_i_l_fin / r_fin_l
         inSum_Big_r = func_i_r_fin / r_fin_r
@@ -351,7 +353,8 @@ class tf_model(tf.Module):
             print("tracing computationBranch_conc_im_zAP")
 
         tf_gamma_fin_zAP   = tf_borders_fin[0] # 3xt
-        tf_beta_fin_zAP    = tf_borders_fin[1] # 3xt
+        # TODO test if this mitigates nan values
+        tf_beta_fin_zAP    = tf_borders_fin[1] + tf.constant(2.22e-16, dtype=tf.float64)# 3xt
 
         tf_i_pre   = self._param_cs_a/( self._param_Re + self._param_Ri )
 
