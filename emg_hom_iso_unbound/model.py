@@ -14,6 +14,8 @@
 # ==============================================================================
 
 import tensorflow as tf
+import tensorflow.nn
+
 import numpy as np
 
 from . import model_config
@@ -221,6 +223,64 @@ class tf_model(tf.Module):
     def set_time(self, time: np.ndarray):
         self._time.assign(self.time)
 
+
+
+    @tf.function
+    def compute_current_sources_RELU6(self):
+
+        if tracing_notice:
+            print("tracing compute_current_sources")
+
+        borders_extendet = tf.expand_dims(self._borders, -1) # 2 x 3 x 1
+        time_extendet    = tf.expand_dims(tf.expand_dims(self._time, 0) , 0 ) # 1x1xt
+
+        # [sectionStart, sectionEnd] x currentSources x time
+        # 2x3xt
+        tf_borders_l =    borders_extendet + self._paraGeom_IP - self._param_v * time_extendet
+        tf_borders_r =  - borders_extendet + self._paraGeom_IP + self._param_v * time_extendet
+
+        c6 = tf.constant(6, dtype=tf.float64)
+        ### left side rstrictions
+        x = c6 / self._paraGeom_IP * tf_borders_l 
+        m = self._paraGeom_IP / c6
+        b = tf.constant(0, dtype=tf.float64)
+
+        borders_l_fin = m * tensorflow.nn.relu6(x) + b
+
+        ### Right side restrictions
+        x = (
+            (c6 / (self._paraGeom_L - self._paraGeom_IP) * tf_borders_r)
+            - (c6 * self._paraGeom_IP) 
+                    / (self._paraGeom_L - self._paraGeom_IP)
+        )
+        m = (self._paraGeom_L - self._paraGeom_IP) / c6
+        b = self._paraGeom_IP
+        borders_r_fin = m * tensorflow.nn.relu6(x) + b
+
+        # transform into action potential local coordinate system
+        # 2x3xt
+        borders_l_fin_xAP =  borders_l_fin - self._paraGeom_IP + self._param_v * time_extendet
+        borders_r_fin_xAP = -borders_r_fin + self._paraGeom_IP + self._param_v * time_extendet
+
+        # currentSources x time
+        # 3 x t
+        func_c_l_fin_xAP, func_i_l_fin = self.computationBranch_conc_im_zAP(borders_l_fin_xAP)
+        func_c_r_fin_xAP, func_i_r_fin = self.computationBranch_conc_im_zAP(borders_r_fin_xAP)
+
+        # transform into fiber coordinate system
+        # x=0       x=IP            x=L
+        #  |---------x---------------|
+        #
+        func_c_l_m_local  =   func_c_l_fin_xAP + self._paraGeom_IP - self._param_v * time_extendet #1x3xt
+        func_c_r_m_local  = - func_c_r_fin_xAP + self._paraGeom_IP + self._param_v * time_extendet #1x3xt
+
+        func_c_l_m_global = self.c_local_to_c_global( func_c_l_m_local)
+        func_c_r_m_global = self.c_local_to_c_global( func_c_r_m_local)
+
+        return (  func_c_l_m_global
+                , func_i_l_fin   ,  func_c_r_m_global, func_i_r_fin
+                , func_c_l_fin_xAP, func_c_r_fin_xAP,  borders_l_fin_xAP, borders_r_fin_xAP)
+
     @tf.function
     def compute_current_sources(self):
 
@@ -373,7 +433,7 @@ class tf_model(tf.Module):
          , func_c_r_m_global
          , func_i_r_fin
          , func_c_l_m_local, func_c_r_m_local
-         , borders_l_fin_xAP, borders_r_fin_xAP) = self.compute_current_sources()
+         , borders_l_fin_xAP, borders_r_fin_xAP) = self.compute_current_sources_RELU6()
 
         # TODO investigate side effects of self.res usage!!
         if tracing_notice:
@@ -445,7 +505,7 @@ class tf_model(tf.Module):
          , func_c_r_m_global
          , func_i_r_fin
          , func_c_l_m_local, func_c_r_m_local
-         , borders_l_fin_xAP, borders_r_fin_xAP) = self.compute_current_sources()
+         , borders_l_fin_xAP, borders_r_fin_xAP) = self.compute_current_sources_RELU6()
 
         # TODO investigate side effects of self.res usage!!
 
