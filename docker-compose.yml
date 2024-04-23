@@ -12,4 +12,6 @@ services:
       dockerfile: ./notebook/Dockerfile
     ports:
       - 127.0.0.1:8888:8888
+    volumes:
+      - ./docker_export:/home/jovyan/work/semg-model_hiu_v0_2_2_devel/docker_export
 
