@@ -264,10 +264,24 @@ class tf_model(tf.Module):
         borders_l_fin_xAP =  borders_l_fin - self._paraGeom_IP + self._param_v * time_extendet
         borders_r_fin_xAP = -borders_r_fin + self._paraGeom_IP + self._param_v * time_extendet
 
+        lower_border = borders_extendet[0,0,0]
+        upper_border = borders_extendet[1,2,0]
+
+        tf.debugging.assert_equal(lower_border, tf.constant(0.0, dtype=tf.float64), 
+                                  message = "lowest integration border is assumed to be 0.0 TODO expand code here")
+
+        a1 = upper_border / c6
+        a2 = 1/a1
+
+        borders_l_fin_xAP_constrained = a1 * tensorflow.nn.relu6(a2 * borders_l_fin_xAP)
+        borders_r_fin_xAP_constrained = a1 * tensorflow.nn.relu6(a2 * borders_r_fin_xAP)
+
         # currentSources x time
         # 3 x t
-        func_c_l_fin_xAP, func_i_l_fin = self.computationBranch_conc_im_zAP(borders_l_fin_xAP)
-        func_c_r_fin_xAP, func_i_r_fin = self.computationBranch_conc_im_zAP(borders_r_fin_xAP)
+        func_c_l_fin_xAP, func_i_l_fin = self.computationBranch_conc_im_zAP(
+            borders_l_fin_xAP_constrained)
+        func_c_r_fin_xAP, func_i_r_fin = self.computationBranch_conc_im_zAP(
+            borders_r_fin_xAP_constrained)
 
         # transform into fiber coordinate system
         # x=0       x=IP            x=L
