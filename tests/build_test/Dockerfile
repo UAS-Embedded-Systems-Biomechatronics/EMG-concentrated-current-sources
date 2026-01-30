@@ -16,6 +16,7 @@ RUN pip install -r /opt/dep/requirements.txt
 
 ADD ./.git  /opt/uut/.git
 WORKDIR /opt/uut
+RUN mkdir /opt/upstream
 RUN git checkout .
 RUN pip install -e .
 RUN pip install .[test]

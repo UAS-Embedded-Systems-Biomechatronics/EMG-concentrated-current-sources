@@ -29,4 +29,5 @@ RUN mamba env create -f ./environment.yml
 SHELL ["conda", "run", "-n", "semg-model_hiu_v0_2_2_devel", "/bin/bash", "-c"]
 
 RUN pip install -e .
+RUN pip install ipykernel
 RUN python3 -m ipykernel install --user --name semg-model_hiu_v0_2_2_devel
