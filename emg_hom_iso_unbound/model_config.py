@@ -264,7 +264,7 @@ def MF_Merletti1999(W_I, R, L_L, W_TL, L_R, W_TR, p_IZ = np.array([0,0,0])):
     """
 
     rand_vec = np.random.rand(5)
-    r   = rand_vec[1] * R
+    r   = np.sqrt(rand_vec[1]) * R
     phi = rand_vec[2] * 2*np.pi
 
     dx_I_P = (rand_vec[0] - 0.5) * W_I
